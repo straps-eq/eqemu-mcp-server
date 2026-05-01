@@ -34,7 +34,7 @@ services:
       - EQEMU_DB_PASSWORD=${MARIADB_PASSWORD}
       - EQEMU_DB_NAME=peq
       - EQEMU_DOCS_PATH=/data/docs
-      - EQEMU_MCP_TOKEN=${MCP_TOKEN:-}
+      - EQEMU_MCP_TOKEN=${EQEMU_MCP_TOKEN:-}
     networks:
       - backend
     depends_on:
