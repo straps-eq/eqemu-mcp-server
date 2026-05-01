@@ -154,6 +154,15 @@ The MCP server is **read-only by default**. It automatically:
 - Mounts your `code/` and `server/` directories read-only
 - Uses your existing `MARIADB_PASSWORD` from the akk-stack `.env`
 
+**Configuration:** All settings go in your akk-stack `.env` (`/opt/akk-stack/.env`) — you do **not** create a separate `.env` inside the `eqemu-mcp-server/` folder. Available variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `MARIADB_PASSWORD` | *(from akk-stack)* | Database password — already in your `.env` |
+| `IP_ADDRESS` | `0.0.0.0` | Bind address — already in your `.env` |
+| `EQEMU_MCP_TOKEN` | *(empty)* | Set to require token auth on connections |
+| `MCP_ACCESS_MODE` | `read` | Set to `readwrite` to enable write tools |
+
 ### Option B: Manual Install (No Docker)
 
 ```bash
