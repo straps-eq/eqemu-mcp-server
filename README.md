@@ -252,6 +252,61 @@ In Settings → MCP Servers, add:
 </details>
 
 <details>
+<summary><b>VS Code (GitHub Copilot)</b></summary>
+
+Open Command Palette → "MCP: Open User Configuration" (or edit `.vscode/mcp.json` in your workspace):
+```json
+{
+  "servers": {
+    "eqemu": {
+      "type": "sse",
+      "url": "http://YOUR_SERVER_IP:8888/sse"
+    }
+  }
+}
+```
+
+With token authentication:
+```json
+{
+  "servers": {
+    "eqemu": {
+      "type": "sse",
+      "url": "http://YOUR_SERVER_IP:8888/sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN"
+      }
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>OpenAI Codex CLI</b></summary>
+
+Run `codex mcp add` or edit `~/.codex/config.toml`:
+```toml
+[mcp_servers.eqemu]
+url = "http://YOUR_SERVER_IP:8888/sse"
+enabled = true
+
+[mcp_servers.eqemu.env]
+MCP_TOKEN = "YOUR_TOKEN"
+```
+
+Or with token via environment variable:
+```toml
+[mcp_servers.eqemu]
+url = "http://YOUR_SERVER_IP:8888/sse"
+bearer_token_env_var = "MCP_TOKEN"
+enabled = true
+```
+
+Then set `export MCP_TOKEN=YOUR_TOKEN` in your shell.
+</details>
+
+<details>
 <summary><b>Claude Desktop</b></summary>
 
 Claude Desktop doesn't natively support SSE. Use stdio mode instead (Option 2), or use [mcp-proxy](https://github.com/punkpeye/mcp-proxy) to bridge SSE to stdio.
