@@ -161,6 +161,8 @@ The MCP server is **read-only by default**. It automatically:
 | `MARIADB_PASSWORD` | *(from akk-stack)* | Database password — already in your `.env` |
 | `IP_ADDRESS` | `0.0.0.0` | Bind address — already in your `.env` |
 | `EQEMU_DB_NAME` | `peq` | Database name — set this if your DB isn't named `peq` |
+| `EQEMU_DB_USER` | `eqemu` | Database user — set to a read-only user for extra safety (see [Read-Only DB User](#read-only-database-user-recommended)) |
+| `EQEMU_DB_PASSWORD` | `${MARIADB_PASSWORD}` | Database password — override if using a separate read-only user |
 | `EQEMU_MCP_TOKEN` | *(empty)* | Set to require token auth on connections |
 | `MCP_ACCESS_MODE` | `read` | Set to `readwrite` to enable write tools |
 
@@ -410,9 +412,47 @@ Then restart the server. Clients must include the token in the URL:
 
 The token can also be passed as a query parameter (`?token=YOUR_TOKEN`) for clients that don't support custom headers. Without a valid token, the server returns `401 Unauthorized`.
 
-### Combining Both
+### Option 3: Read-Only Database User (Recommended)
 
-For maximum security, use both: firewall restricts which IPs can connect, and the token ensures only authorized clients can use the tools even if someone discovers the port.
+By default, the MCP server connects to MariaDB using the `eqemu` user, which has full read/write access. For production or shared deployments, create a dedicated read-only MySQL user so that **no database writes are possible**, even if a bug or prompt injection bypasses the application-level SQL validation.
+
+**Step 1: Create the read-only user**
+
+```bash
+# For akk-stack (Docker):
+docker exec -it akk-stack-mariadb-1 mysql -u root -p${MARIADB_PASSWORD} -e "
+  CREATE USER 'eqemu_readonly'@'%' IDENTIFIED BY 'PICK_A_STRONG_PASSWORD';
+  GRANT SELECT, SHOW DATABASES, SHOW VIEW ON \`YOUR_DB_NAME\`.* TO 'eqemu_readonly'@'%';
+  FLUSH PRIVILEGES;
+"
+```
+
+Replace `YOUR_DB_NAME` with your database name (e.g. `peq`, `e9profusion_production`) and `PICK_A_STRONG_PASSWORD` with a password of your choice.
+
+**Step 2: Add to your `.env`**
+
+```env
+EQEMU_DB_USER=eqemu_readonly
+EQEMU_DB_PASSWORD=PICK_A_STRONG_PASSWORD
+```
+
+**Step 3: Restart the MCP container**
+
+```bash
+cd /opt/akk-stack
+docker compose -f docker-compose.yml \
+  -f eqemu-mcp-server/docker-compose.akk-stack.yml \
+  up -d --no-deps --force-recreate eqemu-mcp
+```
+
+The MCP server now connects with SELECT-only permissions. Any write attempt — whether from the application, an AI, or a crafted query — will be rejected by MySQL itself.
+
+### Combining All Three
+
+For maximum security, use all three layers:
+1. **Firewall** — restricts which IPs can connect
+2. **Token auth** — ensures only authorized clients can use the tools
+3. **Read-only DB user** — guarantees no database writes at the MySQL level, regardless of application behavior
 
 ---
 

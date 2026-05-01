@@ -35,8 +35,8 @@ services:
       - EQEMU_SERVER_PATH=/data/server
       - EQEMU_DB_HOST=mariadb
       - EQEMU_DB_PORT=3306
-      - EQEMU_DB_USER=eqemu
-      - EQEMU_DB_PASSWORD=${MARIADB_PASSWORD}
+      - EQEMU_DB_USER=${EQEMU_DB_USER:-eqemu}
+      - EQEMU_DB_PASSWORD=${EQEMU_DB_PASSWORD:-${MARIADB_PASSWORD}}
       - EQEMU_DB_NAME=${EQEMU_DB_NAME:-peq}
       - EQEMU_DOCS_PATH=/data/docs
       - EQEMU_MCP_TOKEN=${EQEMU_MCP_TOKEN:-}
