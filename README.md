@@ -160,6 +160,7 @@ The MCP server is **read-only by default**. It automatically:
 |---|---|---|
 | `MARIADB_PASSWORD` | *(from akk-stack)* | Database password — already in your `.env` |
 | `IP_ADDRESS` | `0.0.0.0` | Bind address — already in your `.env` |
+| `EQEMU_DB_NAME` | `peq` | Database name — set this if your DB isn't named `peq` |
 | `EQEMU_MCP_TOKEN` | *(empty)* | Set to require token auth on connections |
 | `MCP_ACCESS_MODE` | `read` | Set to `readwrite` to enable write tools |
 
