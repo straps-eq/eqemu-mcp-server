@@ -1,0 +1,45 @@
+# ---------------------------------------------------------------------------
+# EQEmu MCP Server — akk-stack integration
+# ---------------------------------------------------------------------------
+# Add this service to your akk-stack deployment. Two options:
+#
+# Option A: Copy this into your akk-stack docker-compose.yml under services:
+# Option B: Run alongside with:
+#   docker compose -f docker-compose.yml -f /path/to/docker-compose.akk-stack.yml up -d
+#
+# The MCP server joins the akk-stack backend network so it can reach MariaDB
+# directly via hostname 'mariadb' (no external IP needed).
+# ---------------------------------------------------------------------------
+
+services:
+  eqemu-mcp:
+    build: ./eqemu-mcp-server
+    # Or use a pre-built image:
+    # image: ghcr.io/straps-eq/eqemu-mcp-server:latest
+    restart: unless-stopped
+    ports:
+      - "${IP_ADDRESS:-0.0.0.0}:8888:8888"
+    volumes:
+      # Mount the EQEmu source code, quest scripts, and server files (read-only)
+      - ./code:/data/code:ro
+      - ./server:/data/server:ro
+    environment:
+      - EQEMU_ACCESS_MODE=${MCP_ACCESS_MODE:-read}
+      - EQEMU_SOURCE_PATH=/data/code
+      - EQEMU_QUESTS_PATH=/data/server/quests
+      - EQEMU_SERVER_PATH=/data/server
+      - EQEMU_DB_HOST=mariadb
+      - EQEMU_DB_PORT=3306
+      - EQEMU_DB_USER=eqemu
+      - EQEMU_DB_PASSWORD=${MARIADB_PASSWORD}
+      - EQEMU_DB_NAME=peq
+      - EQEMU_DOCS_PATH=/data/docs
+    networks:
+      - backend
+    depends_on:
+      - mariadb
+
+networks:
+  backend:
+    external: true
+    name: akk-stack_backend

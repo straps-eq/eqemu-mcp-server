@@ -1,0 +1,29 @@
+# ---------------------------------------------------------------------------
+# EQEmu MCP Server — Standalone Docker Compose
+# ---------------------------------------------------------------------------
+# For running outside akk-stack. Configure via .env file.
+#
+# Usage:
+#   cp .env.example .env
+#   # Edit .env with your database credentials and paths
+#   docker compose up -d
+# ---------------------------------------------------------------------------
+
+services:
+  eqemu-mcp:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    env_file:
+      - .env
+    volumes:
+      # Mount your EQEmu directories (adjust paths as needed)
+      - ${EQEMU_SOURCE_PATH:-./code}:/data/code:ro
+      - ${EQEMU_QUESTS_PATH:-./server/quests}:/data/quests:ro
+      - ${EQEMU_SERVER_PATH:-./server}:/data/server:ro
+    environment:
+      # Override paths to match container mount points
+      - EQEMU_SOURCE_PATH=/data/code
+      - EQEMU_QUESTS_PATH=/data/quests
+      - EQEMU_SERVER_PATH=/data/server
