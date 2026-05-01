@@ -1,9 +1,37 @@
 __pycache__/
 *.pyc
+*.pyo
 *.egg-info/
 dist/
 build/
+.eggs/
+
+# Environment and secrets
 .env
+.env.local
+.env.*.local
+
+# Virtual environments
 .venv/
 venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
 *.log
+
+# Docker overrides
+docker-compose.override.yml
+
+# Documentation (auto-cloned at runtime)
+eqemu-docs/

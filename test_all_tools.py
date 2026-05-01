@@ -8,17 +8,16 @@ import os
 import sys
 import traceback
 
-# Set up environment
-os.environ.setdefault("EQEMU_DOCS_PATH", "/opt/akk-stack/eqemu-docs")
-os.environ.setdefault("EQEMU_SOURCE_PATH", "/opt/akk-stack/code")
-os.environ.setdefault("EQEMU_QUESTS_PATH", "/opt/akk-stack/server/quests")
-os.environ.setdefault("EQEMU_SERVER_PATH", "/opt/akk-stack/server")
-os.environ.setdefault("EQEMU_DB_HOST", "15.204.234.211")
-os.environ.setdefault("EQEMU_DB_PORT", "3306")
-os.environ.setdefault("EQEMU_DB_USER", "eqemu")
-os.environ.setdefault("EQEMU_DB_PASSWORD", "QXoKk67qHjBNjP86sj6GRr6tsNslSVF")
-os.environ.setdefault("EQEMU_DB_NAME", "peq")
-os.environ.setdefault("RG_PATH", "/opt/akk-stack/eqemu-mcp-venv/bin/rg")
+# Load environment from .env if present
+from pathlib import Path
+env_file = Path(__file__).parent / ".env"
+if env_file.exists():
+    for line in env_file.read_text().splitlines():
+        line = line.strip()
+        if line and not line.startswith("#") and "=" in line:
+            key, _, val = line.partition("=")
+            os.environ.setdefault(key.strip(), val.strip())
+
 os.environ.setdefault("EQEMU_ACCESS_MODE", "read")
 
 from mcp.server.fastmcp import FastMCP
