@@ -1,110 +1,207 @@
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.4.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/python-3.10+-green" alt="Python">
+  <img src="https://img.shields.io/badge/license-MIT-orange" alt="License">
+  <img src="https://img.shields.io/badge/tools-60+-purple" alt="Tools">
+</p>
+
 # EQEmu MCP Server
 
-A comprehensive [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for managing and operating [EverQuest Emulator](https://docs.eqemu.io/) servers. Connects your AI coding assistant (Claude, Cursor, etc.) directly to your EQEmu source code, quest scripts, database, and server configuration.
+> Give your AI assistant full context on your EverQuest Emulator server — source code, quest API, database schema, documentation, and live game data — so it can write accurate queries, debug issues, and manage content without guessing.
 
-## Features
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for [EverQuest Emulator](https://docs.eqemu.io/) servers. Works with **Claude Desktop**, **Cursor**, **Windsurf**, and any MCP-compatible AI client.
 
-**60+ tools** across two permission tiers:
+---
 
-### Read-Only Tools (always available)
+## Why?
+
+When you ask an AI assistant to write a query, inspect spawn data, or debug a quest issue, it has to **guess** table names, column names, relationships, and valid values. It gets things wrong. You end up copy-pasting schema docs and correcting hallucinated SQL.
+
+This MCP server eliminates that. Your AI assistant can:
+
+- **Look up exact schema** — `get_schema_doc("npc_types")` returns all 80+ columns with types and descriptions
+- **Follow relationships** — `table_relationships("spawn2")` shows FK links through the entire spawn chain
+- **Search documentation** — `search_docs("loottable_id")` finds every doc page referencing that column
+- **Query live data** — `run_query("SELECT * FROM npc_types WHERE name LIKE '%Nagafen%'")` hits your actual database
+- **Inspect full chains** — NPC → faction → loot → spawn group → grid path, all from structured tools
+
+The result: correct queries on the first try, accurate quest scripts, and faster debugging.
+
+---
+
+## Tools (60+)
+
+### Read-Only (always available)
 
 | Category | Tools | Description |
 |---|---|---|
-| **C++ Source** | `search_source`, `get_source_file`, `list_source_files` | Search and browse the EQEmu C++ codebase |
-| **Quest API** | `list_quest_api_classes`, `get_quest_api_methods` | Browse Lua/Perl quest API bindings with method signatures |
-| **Quest Scripts** | `list_quest_zones`, `list_quest_files`, `read_quest_file`, `search_quests` | Browse and search quest scripts across all zones |
-| **Server Files** | `list_server_files`, `read_server_file`, `get_server_config` | Inspect server files, plugins, config (passwords redacted) |
-| **Server Info** | `get_server_rules`, `get_server_logs`, `get_crash_logs`, `get_content_flags`, `get_expansion_info` | Rules, logs, crashes, content flags, expansion info |
-| **Database** | `list_tables`, `describe_table`, `run_query`, `table_relationships` | Schema inspection and read-only SQL queries |
-| **NPCs** | `search_npcs`, `get_npc` | Search NPCs by name/zone/level, full NPC details with spawn locations |
-| **Items** | `search_items`, `get_item` | Search items by name/type/level, full item stats |
-| **Spawns** | `get_zone_spawns` | List all spawn points and NPCs in a zone |
-| **Loot** | `get_npc_loot` | Full loot chain: NPC -> loottable -> lootdrop -> items |
-| **Merchants** | `get_merchant_items` | View merchant inventories |
-| **Zones** | `search_zones`, `get_zone_info` | Zone lookup with spawn/NPC/door counts |
-| **Tasks** | `search_tasks` | Search tasks by name |
-| **Factions** | `search_factions` | Search factions by name |
-| **Spells** | `search_spells` | Search spells by name |
-| **Characters** | `list_characters`, `get_character`, `get_online_characters` | List, inspect, and find online characters |
-| **Accounts** | `get_account_info`, `find_associated_accounts` | Account investigation, IP history, alt detection |
-| **Spells (Detail)** | `get_spell` | Full spell details: effects, class usability, teleport info |
-| **Factions (Detail)** | `get_npc_faction` | NPC faction assignments and kill-hit breakdowns |
-| **Tasks (Detail)** | `get_task` | Full task details with activities and rewards |
-| **Tradeskills** | `search_recipes`, `get_recipe` | Tradeskill recipe search and full component/result breakdown |
-| **Spawn Groups** | `get_spawngroup` | Spawn group inspection — placeholder/named setups, NPC chances |
-| **Grids/Pathing** | `get_npc_grid` | NPC patrol paths with waypoint coordinates |
-| **Doors** | `get_zone_doors` | Zone doors/portals with destinations and lock info |
+| **C++ Source** | `search_source` `get_source_file` `list_source_files` | Search and browse the EQEmu C++ codebase |
+| **Quest API** | `list_quest_api_classes` `get_quest_api_methods` | Browse Lua/Perl quest API method signatures |
+| **Quest Scripts** | `list_quest_zones` `list_quest_files` `read_quest_file` `search_quests` | Browse and search quest scripts across all zones |
+| **Server Files** | `list_server_files` `read_server_file` `get_server_config` | Server files, plugins, config (passwords redacted) |
+| **Server Info** | `get_server_rules` `get_server_logs` `get_crash_logs` `get_content_flags` `get_expansion_info` | Rules, logs, crash analysis, content flags |
+| **Database** | `list_tables` `describe_table` `run_query` `table_relationships` | Schema inspection and read-only SQL |
+| **NPCs** | `search_npcs` `get_npc` | NPC search by name/zone/level with spawn locations |
+| **Items** | `search_items` `get_item` `search_items_by_stat` | Item search by name/type/level or stat thresholds |
+| **Spawns** | `get_zone_spawns` `get_spawngroup` | Spawn points, spawn groups, placeholder/named setups |
+| **Loot** | `get_npc_loot` | Full loot chain: NPC → loottable → lootdrop → items |
+| **Merchants** | `get_merchant_items` | Merchant inventories |
+| **Zones** | `search_zones` `get_zone_info` | Zone lookup with spawn/NPC/door counts |
+| **Spells** | `search_spells` `get_spell` | Spell search and full effect/class breakdown |
+| **Factions** | `search_factions` `get_npc_faction` | Faction search and NPC faction kill-hit details |
+| **Tasks** | `search_tasks` `get_task` | Task search and full activity/reward breakdown |
+| **Characters** | `list_characters` `get_character` `get_online_characters` | Character inspection, stats, AAs, inventory, online players |
+| **Accounts** | `get_account_info` `find_associated_accounts` | Account investigation, IP history, alt detection |
+| **Tradeskills** | `search_recipes` `get_recipe` | Recipe search and component/result breakdown |
+| **Grids** | `get_npc_grid` | NPC patrol paths with waypoint coordinates |
+| **Doors** | `get_zone_doors` | Zone doors/portals with destinations, keys, lockpick |
 | **Ground Spawns** | `get_ground_spawns` | Clickable ground items in a zone |
 | **Forage/Fishing** | `get_zone_forage_fishing` | Zone forage and fishing loot tables |
-| **Item Stats** | `search_items_by_stat` | Find items by specific stat thresholds (HP, mana, haste, etc.) |
-| **Documentation** | `search_docs`, `read_doc`, `list_doc_sections` | Search and read the full docs.eqemu.io documentation |
-| **Schema Docs** | `get_schema_doc`, `list_schema_tables` | Database table documentation with column descriptions, types, relationships |
-| **Quest API Docs** | `get_quest_api_doc` | Official quest API method/event docs with examples |
-| **Server Docs** | `get_server_doc` | Server operation guides, configuration references, command lists |
+| **Documentation** | `search_docs` `read_doc` `list_doc_sections` | Full-text search across docs.eqemu.io |
+| **Schema Docs** | `get_schema_doc` `list_schema_tables` | Table docs with column descriptions and ER relationships |
+| **Quest API Docs** | `get_quest_api_doc` | Official quest API docs with signatures and examples |
+| **Server Docs** | `get_server_doc` | Server operation guides and command references |
 
-### Write Tools (opt-in via `EQEMU_ACCESS_MODE=readwrite`)
+### Write Tools (opt-in)
+
+Enable with `EQEMU_ACCESS_MODE=readwrite`:
 
 | Category | Tools | Description |
 |---|---|---|
-| **Quest Editing** | `write_quest_file`, `delete_quest_file` | Create, edit, or delete quest scripts |
+| **Quest Editing** | `write_quest_file` `delete_quest_file` | Create, edit, or delete quest scripts |
 | **Server Rules** | `set_server_rule` | Change server rule values |
 | **Content Flags** | `set_content_flag` | Enable/disable content flags |
-| **NPC Management** | `create_npc`, `update_npc` | Create new NPCs or modify existing ones |
-| **Spawn Management** | `create_spawn`, `delete_spawn` | Add/remove spawn points |
+| **NPC Management** | `create_npc` `update_npc` | Create or modify NPCs |
+| **Spawn Management** | `create_spawn` `delete_spawn` | Add/remove spawn points |
 | **Loot Management** | `add_loot_to_npc` | Add items to NPC loot tables |
-| **Merchants** | `add_merchant_item`, `remove_merchant_item` | Manage merchant inventories |
-| **Data Buckets** | `get_data_buckets`, `set_data_bucket` | Read/write data buckets |
+| **Merchants** | `add_merchant_item` `remove_merchant_item` | Manage merchant inventories |
+| **Data Buckets** | `get_data_buckets` `set_data_bucket` | Read/write data buckets |
 | **Database** | `run_write_query` | Execute INSERT/UPDATE/DELETE queries |
+
+---
 
 ## Quick Start
 
 ### Prerequisites
 
-- Python 3.10+
-- Access to an EQEmu server (akk-stack recommended)
-- [ripgrep](https://github.com/BurntSushi/ripgrep) (for source code search — optional, falls back to grep)
+- **Python 3.10+**
+- **Access to an EQEmu server** ([akk-stack](https://github.com/Akkadius/akk-stack) recommended)
+- **ripgrep** (optional — for fast source code search, falls back to grep)
 
-### Installation
+### Option A: Docker (Recommended)
 
 ```bash
-# Clone the repo
-git clone https://github.com/your-org/eqemu-mcp-server.git
+git clone https://github.com/straps-eq/eqemu-mcp-server.git
 cd eqemu-mcp-server
 
-# Create a Python virtual environment
+cp .env.example .env
+# Edit .env with your database credentials and paths
+
+docker compose up -d
+```
+
+The server starts on port 8888. Connect your AI client to `http://YOUR_SERVER_IP:8888/sse`.
+
+#### akk-stack Integration
+
+If you're running [akk-stack](https://github.com/Akkadius/akk-stack), the MCP server can join your existing Docker network and talk to MariaDB directly:
+
+```bash
+cd /opt/akk-stack
+git clone https://github.com/straps-eq/eqemu-mcp-server.git
+
+# Start alongside your existing stack
+docker compose -f docker-compose.yml -f eqemu-mcp-server/docker-compose.akk-stack.yml up -d eqemu-mcp
+```
+
+This automatically:
+- Connects to MariaDB via the `backend` network (no external IP needed)
+- Mounts your `code/` and `server/` directories read-only
+- Uses your existing `MARIADB_PASSWORD` from the akk-stack `.env`
+
+### Option B: Manual Install (No Docker)
+
+```bash
+git clone https://github.com/straps-eq/eqemu-mcp-server.git
+cd eqemu-mcp-server
+
 python3 -m venv venv
 source venv/bin/activate
-
-# Install dependencies
 pip install -e .
 
-# Configure
 cp .env.example .env
-# Edit .env with your server's paths and database credentials
+# Edit .env with your server paths and database credentials
+
+# Start SSE server
+./start.sh --sse 8888
 ```
 
 ### Finding Your Database Credentials
 
 **akk-stack users:**
 ```bash
-cd /opt/akk-stack
-make info    # Shows all passwords and connection details
+cd /opt/akk-stack && make info
 ```
 
-Or check your `eqemu_config.json`:
+Or read `eqemu_config.json`:
 ```bash
 cat /opt/akk-stack/server/eqemu_config.json | python3 -m json.tool
 ```
 
-The database section has `host`, `port`, `username`, `password`, and `db`.
+> **Note:** If running the MCP server outside Docker (directly on the host), use the host's external IP for `EQEMU_DB_HOST`, not `127.0.0.1` or `mariadb`.
 
-**Important:** If running the MCP server *outside* the Docker network (e.g., directly on the host), use the host's external IP for `EQEMU_DB_HOST`, not `127.0.0.1` or `mariadb`.
+---
 
-### Usage
+## Connecting Your AI Client
 
-#### stdio (Claude Desktop / Cursor / Windsurf)
+### Option 1: SSE (Recommended for Remote)
 
-Add to your MCP client configuration:
+Start the server:
+```bash
+./start.sh --sse 8888
+```
+
+Then configure your AI client:
+
+<details>
+<summary><b>Windsurf</b></summary>
+
+Edit `~/.codeium/windsurf/mcp_config.json`:
+```json
+{
+  "mcpServers": {
+    "eqemu": {
+      "serverUrl": "http://YOUR_SERVER_IP:8888/sse"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Cursor</b></summary>
+
+In Settings → MCP Servers, add:
+```json
+{
+  "mcpServers": {
+    "eqemu": {
+      "url": "http://YOUR_SERVER_IP:8888/sse"
+    }
+  }
+}
+```
+</details>
+
+<details>
+<summary><b>Claude Desktop</b></summary>
+
+Claude Desktop doesn't natively support SSE. Use stdio mode instead (Option 2), or use [mcp-proxy](https://github.com/punkpeye/mcp-proxy) to bridge SSE to stdio.
+</details>
+
+### Option 2: stdio (Local)
+
+If the MCP server is on the same machine as your AI client:
 
 ```json
 {
@@ -129,101 +226,153 @@ Add to your MCP client configuration:
 }
 ```
 
-#### SSE (Remote / Network)
-
-```bash
-./start.sh --sse 8888
-```
-
-Then connect your MCP client to `http://your-server:8888/sse`.
+---
 
 ## Permission Model
 
-The server operates in one of two modes, controlled by `EQEMU_ACCESS_MODE`:
-
-| Mode | Value | Tools Available | Use Case |
+| Mode | `EQEMU_ACCESS_MODE` | Tools | Use Case |
 |---|---|---|---|
-| **Read-Only** | `read` (default) | 30+ read-only tools | Safe for shared/public use, exploring and learning |
-| **Read-Write** | `readwrite` | All 40+ tools | Server admins actively managing content |
-
-**Read-only mode** is the default and is safe to expose. All database queries are restricted to SELECT/SHOW/DESCRIBE, all file access is read-only, and passwords in server config are redacted.
-
-**Read-write mode** enables database modifications, quest file editing, NPC/spawn/loot creation, and server rule changes. Only enable this if you trust the MCP client and understand the implications.
-
-### Setting the Mode
+| **Read-Only** | `read` (default) | 50+ read-only | Safe for sharing — SQL restricted to SELECT, passwords redacted |
+| **Read-Write** | `readwrite` | All 60+ | Server admins actively managing content |
 
 ```bash
 # In .env
-EQEMU_ACCESS_MODE=readwrite
-
-# Or as environment variable
-EQEMU_ACCESS_MODE=readwrite python server.py
+EQEMU_ACCESS_MODE=read      # safe default
+EQEMU_ACCESS_MODE=readwrite  # full access
 ```
 
-## Architecture
+---
 
+## Security
+
+By default, the MCP server accepts connections from anyone who can reach the port. Use one or both of these methods to restrict access.
+
+### Option 1: Firewall (IP Restriction)
+
+Use UFW to only allow specific IP addresses to connect:
+
+```bash
+# Remove any existing open rule
+sudo ufw delete allow 8888/tcp
+
+# Allow only your IP
+sudo ufw allow from YOUR_HOME_IP to any port 8888 proto tcp
+
+# Allow additional users
+sudo ufw allow from FRIEND_IP to any port 8888 proto tcp
+
+# Verify
+sudo ufw status | grep 8888
 ```
-eqemu-mcp-server/
-  server.py                 # Entry point — registers tools based on access mode
-  eqemu_mcp/
-    __init__.py
-    config.py               # Centralized configuration from env vars
-    helpers.py              # Shared utilities (DB, ripgrep, file I/O)
-    tools_source.py         # C++ source code search/browsing
-    tools_quest_api.py      # Lua/Perl quest API method parsing
-    tools_quests.py         # Quest script browsing + editing (write)
-    tools_server.py         # Server config, rules, logs, content flags
-    tools_database.py       # Schema inspection, SQL queries
-    tools_entities.py       # NPC, item, spawn, loot, zone, spell lookups
-    tools_entities_write.py # NPC, spawn, loot, merchant write operations
-    tools_docs.py           # EQEmu documentation search (docs.eqemu.io)
-    tools_lookup.py         # Deep-dive lookups: characters, accounts, recipes, doors, grids, factions
-  .env.example              # Configuration template
-  start.sh                  # Startup script
-  pyproject.toml            # Python package config
+
+This is the simplest approach — no code changes needed. To find your IP, visit https://whatismyip.com.
+
+### Option 2: Token Authentication
+
+Require a secret token for all SSE connections. Set `EQEMU_MCP_TOKEN` in your `.env`:
+
+```bash
+# Generate a random token
+EQEMU_MCP_TOKEN=$(openssl rand -hex 32)
+echo "EQEMU_MCP_TOKEN=$EQEMU_MCP_TOKEN" >> .env
+echo "Your token: $EQEMU_MCP_TOKEN"
 ```
+
+Then restart the server. Clients must include the token in the URL:
+
+**Windsurf / Cursor:**
+```json
+{
+  "mcpServers": {
+    "eqemu": {
+      "serverUrl": "http://YOUR_SERVER_IP:8888/sse?token=YOUR_TOKEN"
+    }
+  }
+}
+```
+
+Without a valid token, the server returns `401 Unauthorized`. The token is also accepted via the `Authorization: Bearer <token>` header.
+
+### Combining Both
+
+For maximum security, use both: firewall restricts which IPs can connect, and the token ensures only authorized clients can use the tools even if someone discovers the port.
+
+---
+
+## Example Conversations
+
+Once connected, your AI assistant can handle requests like:
+
+**Querying & Inspecting:**
+> "Write me a query to find all NPCs in crushbone that drop cloth items"
+>
+> "What's in Lord Nagafen's loot table?"
+>
+> "Show me all items with haste >= 30"
+>
+> "Who's online right now?"
+
+**Debugging & Investigation:**
+> "Find all accounts that share IPs with the character Soandso"
+>
+> "Show me the patrol path for the guard NPCs in Qeynos"
+>
+> "What faction hits do you get for killing a Freeport Militia member?"
+>
+> "Show me the most recent crash logs"
+
+**Quest Development:**
+> "What Lua quest methods are available on the Client object?"
+>
+> "Search the source for how spell resistance is calculated"
+>
+> "Find all quest scripts that use `eq.spawn2`"
+
+**Content Management** (write mode):
+> "Create a new NPC named Test_Merchant at level 30"
+>
+> "Add a Cloth Cap to merchant 123's inventory"
+>
+> "Set the AA:ExpPerPoint rule to 50000000"
+
+---
 
 ## Deployment on akk-stack
 
-For servers running the [akk-stack](https://github.com/Akkadius/akk-stack):
-
 ```bash
-# On the server host
 cd /opt/akk-stack
 
-# Create venv (if not already done)
+# Create venv
 python3 -m venv eqemu-mcp-venv
 source eqemu-mcp-venv/bin/activate
 pip install mcp[cli] mysql-connector-python
 
-# Install ripgrep (if not available)
-apt-get install -y ripgrep  # or download from GitHub releases
+# Install ripgrep (optional but recommended)
+apt-get install -y ripgrep
 
-# Clone EQEmu docs (for documentation search tools)
+# Clone documentation (for docs tools)
 git clone --depth 1 https://github.com/EQEmu/eqemu-docs-v2.git eqemu-docs
 
 # Clone and configure
-git clone https://github.com/your-org/eqemu-mcp-server.git
+git clone https://github.com/straps-eq/eqemu-mcp-server.git
 cd eqemu-mcp-server
 cp .env.example .env
-
-# Edit .env:
-#   EQEMU_DB_HOST=<your-server-external-ip>
-#   EQEMU_DB_PASSWORD=<from 'make info'>
-#   EQEMU_ACCESS_MODE=read  (or readwrite)
-#   EQEMU_DOCS_PATH=/opt/akk-stack/eqemu-docs
+# Edit .env with: DB host/password (from `make info`), paths, access mode
 
 # Test
 python server.py  # Ctrl+C to stop
 
-# Run as SSE service
+# Run SSE
 ./start.sh --sse 8888
+
+# Open the firewall port
+sudo ufw allow 8888/tcp
 ```
 
 ### Running as a systemd Service
 
 ```bash
-sudo cat > /etc/systemd/system/eqemu-mcp.service << 'EOF'
+sudo tee /etc/systemd/system/eqemu-mcp.service > /dev/null << 'EOF'
 [Unit]
 Description=EQEmu MCP Server
 After=docker.service
@@ -243,49 +392,46 @@ sudo systemctl enable eqemu-mcp
 sudo systemctl start eqemu-mcp
 ```
 
-## Public / Shared Access
+---
 
-For offering this to other EQEmu server operators:
+## Architecture
 
-### Self-Hosted (Recommended)
+```
+eqemu-mcp-server/
+  server.py                          # Entry point — registers tools based on access mode
+  start.sh                           # Startup script (loads .env, activates venv)
+  Dockerfile                         # Docker image for containerized deployment
+  docker-compose.yml                 # Standalone Docker Compose
+  docker-compose.akk-stack.yml       # akk-stack integration overlay
+  eqemu_mcp/
+    config.py                        # Centralized configuration from env vars
+    helpers.py                       # Shared utilities (DB connections, ripgrep, file I/O)
+    tools_source.py                  # C++ source code search and browsing
+    tools_quest_api.py               # Lua/Perl quest API method parsing
+    tools_quests.py                  # Quest script browsing + editing (write)
+    tools_server.py                  # Server config, rules, logs, content flags
+    tools_database.py                # Schema inspection and SQL queries
+    tools_entities.py                # NPC, item, spawn, loot, zone, spell lookups
+    tools_entities_write.py          # NPC, spawn, loot, merchant write operations
+    tools_docs.py                    # EQEmu documentation search (docs.eqemu.io)
+    tools_lookup.py                  # Characters, accounts, recipes, doors, grids, factions
+```
 
-Each server operator runs their own MCP server instance pointed at their own data. This is the simplest and most secure approach:
+---
 
-1. Clone the repo on their server
+## Self-Hosting for Other Server Operators
+
+Each EQEmu server operator runs their own instance:
+
+1. Clone this repo on the server
 2. Configure `.env` with their paths and DB credentials
-3. Set `EQEMU_ACCESS_MODE=read` for safety
+3. Set `EQEMU_ACCESS_MODE=read` (safe default)
 4. Run via stdio or SSE
+5. Connect their AI client
 
-### Hosted Service (Advanced)
+The server is completely self-contained — no external services, no cloud dependencies, no API keys. All data stays on your machine.
 
-For a centralized MCP service serving multiple servers:
-
-- Each server would need a unique API key / tenant identifier
-- Database connections would be per-tenant
-- Source code access could point to the public EQEmu GitHub repo
-- Quest and server file access would need secure file serving per tenant
-
-This requires additional authentication/authorization infrastructure beyond what's in the current codebase.
-
-## Example Queries
-
-Once connected, you can ask your AI assistant things like:
-
-- "What quest methods are available for mob HP manipulation in Lua?"
-- "Show me all NPCs in Befallen above level 10"
-- "What's in Fippy Darkpaw's loot table?"
-- "Search the C++ source for how spell resistance is calculated"
-- "What server rules control AA experience?"
-- "Show me the most recent world server logs"
-- "List all merchants in East Commonlands"
-- "What items does the Cloth Cap recipe require?"
-- "Find all quest scripts that use `quest::say`"
-
-With write mode enabled:
-- "Create a new NPC named Test_Merchant at level 30"
-- "Add a Cloth Cap to merchant 123's inventory"
-- "Set the AA:ExpPerPoint rule to 50000000"
-- "Write a new quest script for an NPC in gfaydark"
+---
 
 ## License
 

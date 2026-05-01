@@ -17,7 +17,7 @@ try:
 except ImportError:
     _security = None
 
-from eqemu_mcp.config import ACCESS_MODE, is_writable
+from eqemu_mcp.config import ACCESS_MODE, is_writable, MCP_TOKEN
 from eqemu_mcp import (
     tools_source,
     tools_quest_api,
@@ -79,12 +79,47 @@ if __name__ == "__main__":
     if "--sse" in sys.argv:
         idx = sys.argv.index("--sse")
         port = int(sys.argv[idx + 1]) if idx + 1 < len(sys.argv) else 8888
-        # Set host/port via environment (FastMCP reads these)
-        os.environ.setdefault("FASTMCP_PORT", str(port))
-        os.environ.setdefault("FASTMCP_HOST", "0.0.0.0")
-        # Also set directly on settings object
-        mcp.settings.host = "0.0.0.0"
-        mcp.settings.port = port
-        mcp.run(transport="sse")
+
+        if MCP_TOKEN:
+            # Token auth enabled — wrap the SSE app with middleware
+            import uvicorn
+            from starlette.middleware import Middleware
+            from starlette.requests import Request
+            from starlette.responses import JSONResponse
+            from starlette.types import ASGIApp, Receive, Scope, Send
+
+            class TokenAuthMiddleware:
+                def __init__(self, app: ASGIApp) -> None:
+                    self.app = app
+
+                async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+                    if scope["type"] == "http":
+                        request = Request(scope)
+                        token = request.query_params.get("token", "")
+                        if not token:
+                            auth = request.headers.get("authorization", "")
+                            if auth.lower().startswith("bearer "):
+                                token = auth[7:]
+                        if token != MCP_TOKEN:
+                            response = JSONResponse(
+                                {"error": "Unauthorized — invalid or missing token"},
+                                status_code= 401,
+                            )
+                            await response(scope, receive, send)
+                            return
+                    await self.app(scope, receive, send)
+
+            app = mcp.sse_app()
+            app = TokenAuthMiddleware(app)
+            print(f"EQEmu MCP Server — mode: {ACCESS_MODE}, auth: token, port: {port}")
+            uvicorn.run(app, host="0.0.0.0", port=port)
+        else:
+            # No token — run normally
+            os.environ.setdefault("FASTMCP_PORT", str(port))
+            os.environ.setdefault("FASTMCP_HOST", "0.0.0.0")
+            mcp.settings.host = "0.0.0.0"
+            mcp.settings.port = port
+            print(f"EQEmu MCP Server — mode: {ACCESS_MODE}, auth: none, port: {port}")
+            mcp.run(transport="sse")
     else:
         mcp.run()

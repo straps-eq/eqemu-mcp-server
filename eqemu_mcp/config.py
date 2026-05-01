@@ -47,6 +47,13 @@ DOCS_REPO_URL = "https://github.com/EQEmu/eqemu-docs-v2.git"
 DOCS_SITE_URL = "https://docs.eqemu.io"
 
 # ---------------------------------------------------------------------------
+# Authentication
+# ---------------------------------------------------------------------------
+# Set EQEMU_MCP_TOKEN to require Bearer token authentication on SSE connections.
+# Leave empty or unset to allow unauthenticated access.
+MCP_TOKEN: str = os.environ.get("EQEMU_MCP_TOKEN", "")
+
+# ---------------------------------------------------------------------------
 # Limits
 # ---------------------------------------------------------------------------
 MAX_RESULTS = 200
