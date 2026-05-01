@@ -110,9 +110,13 @@ If you're running [akk-stack](https://github.com/Akkadius/akk-stack), the MCP se
 cd /opt/akk-stack
 git clone https://github.com/straps-eq/eqemu-mcp-server.git
 
-# Start alongside your existing stack
-docker compose -f docker-compose.yml -f eqemu-mcp-server/docker-compose.akk-stack.yml up -d eqemu-mcp
+# Start the MCP server alongside your existing stack
+docker compose -f docker-compose.yml \
+  -f eqemu-mcp-server/docker-compose.akk-stack.yml \
+  up -d --no-deps eqemu-mcp
 ```
+
+> **⚠️ Important:** Always use `--no-deps eqemu-mcp` to start *only* the MCP container. Without `--no-deps`, Docker Compose may recreate your MariaDB and EQEmu server containers, causing a server restart.
 
 This automatically:
 - Connects to MariaDB via the `backend` network (no external IP needed)
@@ -172,6 +176,20 @@ Edit `~/.codeium/windsurf/mcp_config.json`:
   "mcpServers": {
     "eqemu": {
       "serverUrl": "http://YOUR_SERVER_IP:8888/sse"
+    }
+  }
+}
+```
+
+With token authentication enabled:
+```json
+{
+  "mcpServers": {
+    "eqemu": {
+      "serverUrl": "http://YOUR_SERVER_IP:8888/sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN"
+      }
     }
   }
 }
@@ -280,18 +298,21 @@ echo "Your token: $EQEMU_MCP_TOKEN"
 
 Then restart the server. Clients must include the token in the URL:
 
-**Windsurf / Cursor:**
+**Windsurf:**
 ```json
 {
   "mcpServers": {
     "eqemu": {
-      "serverUrl": "http://YOUR_SERVER_IP:8888/sse?token=YOUR_TOKEN"
+      "serverUrl": "http://YOUR_SERVER_IP:8888/sse",
+      "headers": {
+        "Authorization": "Bearer YOUR_TOKEN"
+      }
     }
   }
 }
 ```
 
-Without a valid token, the server returns `401 Unauthorized`. The token is also accepted via the `Authorization: Bearer <token>` header.
+The token can also be passed as a query parameter (`?token=YOUR_TOKEN`) for clients that don't support custom headers. Without a valid token, the server returns `401 Unauthorized`.
 
 ### Combining Both
 

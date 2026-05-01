@@ -1,12 +1,17 @@
 # ---------------------------------------------------------------------------
 # EQEmu MCP Server — akk-stack integration
 # ---------------------------------------------------------------------------
-# Add this service to your akk-stack deployment. Two options:
+# Add the eqemu-mcp service to your akk-stack deployment.
 #
-# Option A: Copy this into your akk-stack docker-compose.yml under services:
-# Option B: Run alongside with:
-#   docker compose -f docker-compose.yml -f /path/to/docker-compose.akk-stack.yml up -d
+# IMPORTANT: Use `up -d eqemu-mcp` (specifying the service name) to avoid
+# restarting your existing akk-stack containers (mariadb, eqemu-server, etc.).
 #
+# Usage:
+#   docker compose -f docker-compose.yml \
+#     -f eqemu-mcp-server/docker-compose.akk-stack.yml \
+#     up -d --no-deps eqemu-mcp
+#
+# The --no-deps flag prevents Docker from recreating dependent services.
 # The MCP server joins the akk-stack backend network so it can reach MariaDB
 # directly via hostname 'mariadb' (no external IP needed).
 # ---------------------------------------------------------------------------
@@ -37,8 +42,9 @@ services:
       - EQEMU_MCP_TOKEN=${EQEMU_MCP_TOKEN:-}
     networks:
       - backend
-    depends_on:
-      - mariadb
+    # Note: mariadb must already be running (part of akk-stack).
+    # We intentionally omit depends_on to avoid docker compose
+    # recreating or restarting the mariadb container.
 
 networks:
   backend:
