@@ -104,13 +104,33 @@ The server starts on port 8888. Connect your AI client to `http://YOUR_SERVER_IP
 
 #### akk-stack Integration
 
-If you're running [akk-stack](https://github.com/Akkadius/akk-stack), the MCP server can join your existing Docker network and talk to MariaDB directly:
+If you're running [akk-stack](https://github.com/Akkadius/akk-stack), the MCP server can join your existing Docker network and talk to MariaDB directly. **No separate `.env` file is needed** — the compose overlay reads credentials from your akk-stack `.env` automatically.
 
+**Step 1: Clone into your akk-stack directory**
 ```bash
 cd /opt/akk-stack
 git clone https://github.com/straps-eq/eqemu-mcp-server.git
+```
 
-# Start the MCP server alongside your existing stack
+**Step 2 (optional): Add token authentication**
+
+To require a token for connections, add this to your akk-stack `.env`:
+```bash
+echo "EQEMU_MCP_TOKEN=$(openssl rand -hex 32)" >> /opt/akk-stack/.env
+# View the generated token:
+grep EQEMU_MCP_TOKEN /opt/akk-stack/.env
+```
+
+**Step 3: Build and start the MCP container**
+```bash
+cd /opt/akk-stack
+
+# Build the image
+docker compose -f docker-compose.yml \
+  -f eqemu-mcp-server/docker-compose.akk-stack.yml \
+  build eqemu-mcp
+
+# Start (only the MCP container — does NOT restart your game server)
 docker compose -f docker-compose.yml \
   -f eqemu-mcp-server/docker-compose.akk-stack.yml \
   up -d --no-deps eqemu-mcp
@@ -118,7 +138,18 @@ docker compose -f docker-compose.yml \
 
 > **⚠️ Important:** Always use `--no-deps eqemu-mcp` to start *only* the MCP container. Without `--no-deps`, Docker Compose may recreate your MariaDB and EQEmu server containers, causing a server restart.
 
-This automatically:
+**Step 4: Open the firewall**
+```bash
+sudo ufw allow 8888/tcp
+```
+
+**Step 5: Verify**
+```bash
+docker logs akk-stack-eqemu-mcp-1 --tail 5
+# Should show: "Uvicorn running on http://0.0.0.0:8888"
+```
+
+The MCP server is **read-only by default**. It automatically:
 - Connects to MariaDB via the `backend` network (no external IP needed)
 - Mounts your `code/` and `server/` directories read-only
 - Uses your existing `MARIADB_PASSWORD` from the akk-stack `.env`
