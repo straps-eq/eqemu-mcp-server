@@ -9,7 +9,28 @@
 
 > Give your AI assistant full context on your EverQuest Emulator server — source code, quest API, database schema, documentation, and live game data — so it can write accurate queries, debug issues, and manage content without guessing.
 
-A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for [EverQuest Emulator](https://docs.eqemu.io/) servers. Works with **Claude Desktop**, **Cursor**, **Windsurf**, and any MCP-compatible AI client.
+A [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) server for [EverQuest Emulator](https://docs.eqemu.io/) servers. Works with **Windsurf**, **VS Code**, **Cursor**, **OpenAI Codex**, **Claude Desktop**, and any MCP-compatible AI client.
+
+---
+
+## What's Included
+
+Your AI assistant gets access to **everything** it needs to understand and operate your EQEmu server:
+
+| Data Source | What Your AI Can Access |
+|---|---|
+| **📚 EQEmu Documentation** | Full-text search across all 638 pages of [docs.eqemu.io](https://docs.eqemu.io) — server operation guides, configuration references, quest tutorials, and more |
+| **🗄️ Database Schema Docs** | Detailed documentation for all 261 tables across 48 categories — column names, types, descriptions, and ER relationship diagrams |
+| **🔍 Live Database** | Read-only SQL queries against your actual game database — NPCs, items, spawns, loot, characters, accounts, zones, spells, factions, tasks, tradeskills |
+| **💻 C++ Source Code** | Full-text search across the EQEmu C++ codebase — find how mechanics work, trace calculations, understand game systems |
+| **📜 Quest Scripts** | Browse and search all Perl/Lua quest scripts across every zone — read quest logic, find event handlers, trace quest flows |
+| **🔧 Quest API Reference** | Complete Lua and Perl quest API documentation — method signatures, event lists, and examples for all 30+ method classes |
+| **⚙️ Server Configuration** | Server rules, content flags, expansion settings, eqemu_config.json (with passwords auto-redacted) |
+| **📋 Server Logs** | Recent server logs and crash logs for debugging |
+| **👤 Characters & Accounts** | Character inspection (stats, AAs, inventory, guild), account details, IP history, alt/multibox detection |
+| **🗺️ Zone Details** | Zone information with spawn counts, NPC lists, doors/portals, ground spawns, forage/fishing tables, patrol grids |
+
+> **No guessing.** Your AI looks up the exact schema, follows the correct relationships, and writes accurate queries on the first try.
 
 ---
 
