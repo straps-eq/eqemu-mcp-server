@@ -42,7 +42,8 @@ MARIADB_CONTAINER = os.environ.get("EQEMU_MARIADB_CONTAINER", "akk-stack-mariadb
 # ---------------------------------------------------------------------------
 # Documentation
 # ---------------------------------------------------------------------------
-DOCS_PATH = Path(os.environ.get("EQEMU_DOCS_PATH", ""))
+_docs_path = os.environ.get("EQEMU_DOCS_PATH", "").strip()
+DOCS_PATH: Path | None = Path(_docs_path) if _docs_path else None
 DOCS_REPO_URL = "https://github.com/EQEmu/eqemu-docs-v2.git"
 DOCS_SITE_URL = "https://docs.eqemu.io"
 

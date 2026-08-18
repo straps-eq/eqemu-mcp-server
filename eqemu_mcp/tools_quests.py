@@ -1,12 +1,13 @@
 """Tools for browsing and searching quest script files."""
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
-from .config import QUESTS_PATH, MAX_RESULTS, is_writable
-from .helpers import ripgrep_search, resolve_quests, safe_read
+from .annotations import IDEMPOTENT_WRITE
+from .config import QUESTS_PATH
+from .helpers import resolve_quests, ripgrep_search, safe_read
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
 
     @mcp.tool()
     def list_quest_zones() -> str:
@@ -59,10 +60,10 @@ def register(mcp: FastMCP) -> None:
         return ripgrep_search(pattern, search_path, glob, max_results)
 
 
-def register_write(mcp: FastMCP) -> None:
+def register_write(mcp: MCPServer) -> None:
     """Write-mode quest tools."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def write_quest_file(zone: str, filename: str, content: str) -> str:
         """Create or overwrite a quest script file.
 
@@ -78,7 +79,7 @@ def register_write(mcp: FastMCP) -> None:
         filepath.write_text(content)
         return f"Written {len(content)} bytes to {zone}/{filename}"
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def delete_quest_file(zone: str, filename: str) -> str:
         """Delete a quest script file.
 

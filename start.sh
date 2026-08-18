@@ -2,7 +2,8 @@
 # Start the EQEmu MCP server
 # Usage:
 #   ./start.sh                   — stdio transport (for Claude Desktop, Cursor)
-#   ./start.sh --sse [PORT]      — SSE transport (for remote/network access)
+#   ./start.sh --http [PORT]     — Streamable HTTP (recommended for remote access)
+#   ./start.sh --sse [PORT]      — legacy SSE transport
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 VENV_DIR="${EQEMU_MCP_VENV:-$SCRIPT_DIR/../eqemu-mcp-venv}"
@@ -21,10 +22,11 @@ fi
 
 echo "EQEmu MCP Server — mode: ${EQEMU_ACCESS_MODE:-read}"
 
-if [ "$1" = "--sse" ]; then
+if [ "$1" = "--http" ] || [ "$1" = "--sse" ]; then
+    TRANSPORT="$1"
     PORT="${2:-8888}"
-    echo "Starting SSE transport on port $PORT..."
-    exec python "$SCRIPT_DIR/server.py" --sse "$PORT"
+    echo "Starting $TRANSPORT transport on port $PORT..."
+    exec python "$SCRIPT_DIR/server.py" "$TRANSPORT" "$PORT"
 else
     exec python "$SCRIPT_DIR/server.py"
 fi

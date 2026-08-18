@@ -11,10 +11,10 @@ if env_file.exists():
             key, _, val = line.partition("=")
             os.environ.setdefault(key.strip(), val.strip())
 
-from mcp.server.fastmcp import FastMCP
 from eqemu_mcp import tools_lookup
+from eqemu_mcp.mcp_server import EQEmuMCPServer
 
-mcp = FastMCP("test")
+mcp = EQEmuMCPServer("test")
 tools_lookup.register(mcp)
 
 # We need to call the tool functions directly

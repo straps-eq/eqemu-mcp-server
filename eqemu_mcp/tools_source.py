@@ -1,12 +1,12 @@
 """Tools for exploring the EQEmu C++ source code."""
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
-from .config import SOURCE_PATH, MAX_RESULTS
-from .helpers import ripgrep_search, resolve_source, safe_read
+from .config import MAX_RESULTS, SOURCE_PATH
+from .helpers import resolve_source, ripgrep_search, safe_read
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
 
     @mcp.tool()
     def search_source(

@@ -7,7 +7,7 @@ from pathlib import Path
 
 import mysql.connector
 
-from .config import DB_CONFIG, MAX_FILE_SIZE, SOURCE_PATH, QUESTS_PATH, SERVER_PATH
+from .config import DB_CONFIG, MAX_FILE_SIZE, QUESTS_PATH, SERVER_PATH, SOURCE_PATH
 
 
 def rg_bin() -> str:

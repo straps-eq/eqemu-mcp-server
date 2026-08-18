@@ -20,8 +20,6 @@ if env_file.exists():
 
 os.environ.setdefault("EQEMU_ACCESS_MODE", "read")
 
-from mcp.server.fastmcp import FastMCP
-
 # Import all tool modules
 from eqemu_mcp import (
     tools_source,
@@ -33,9 +31,10 @@ from eqemu_mcp import (
     tools_docs,
     tools_lookup,
 )
+from eqemu_mcp.mcp_server import EQEmuMCPServer
 
 # Create MCP instance and register all tools
-mcp = FastMCP("test")
+mcp = EQEmuMCPServer("test")
 tools_source.register(mcp)
 tools_quest_api.register(mcp)
 tools_quests.register(mcp)

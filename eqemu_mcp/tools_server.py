@@ -4,9 +4,10 @@ import json
 import os
 import subprocess
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
-from .config import SERVER_PATH, DOCKER_CONTAINER, MAX_RESULTS
+from .annotations import IDEMPOTENT_WRITE
+from .config import MAX_RESULTS, SERVER_PATH
 from .helpers import resolve_server, safe_read
 
 
@@ -24,7 +25,7 @@ def _docker_exec(container: str, cmd: str, timeout: int = 15) -> str:
         return "Error: command timed out."
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
 
     @mcp.tool()
     def list_server_files(directory: str = "") -> str:
@@ -101,7 +102,6 @@ def register(mcp: FastMCP) -> None:
             log_type: 'world', 'zone', 'login', 'ucs', or a specific zone log filename.
             lines: Number of lines to return (default 100, max 500).
         """
-        import os
         lines = min(lines, 500)
         logs_dir = SERVER_PATH / "logs"
 
@@ -115,7 +115,7 @@ def register(mcp: FastMCP) -> None:
             if not zone_logs:
                 return "No zone logs found."
             entries = [f.name for f in zone_logs[:30]]
-            return f"Recent zone logs (use log_type with full filename):\n" + "\n".join(entries)
+            return "Recent zone logs (use log_type with full filename):\n" + "\n".join(entries)
 
         # Find the most recent matching log
         if "/" in log_type or log_type.endswith(".log"):
@@ -131,7 +131,7 @@ def register(mcp: FastMCP) -> None:
             log_path = matching[0]
 
         if not log_path.is_file():
-            return f"Error: log file not found."
+            return "Error: log file not found."
 
         # Read last N lines
         content = log_path.read_text(errors="replace")
@@ -213,10 +213,10 @@ def register(mcp: FastMCP) -> None:
             conn.close()
 
 
-def register_write(mcp: FastMCP) -> None:
+def register_write(mcp: MCPServer) -> None:
     """Write-mode server management tools."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def set_server_rule(rule_name: str, rule_value: str, notes: str = "") -> str:
         """Update a server rule value.
 
@@ -249,7 +249,7 @@ def register_write(mcp: FastMCP) -> None:
         finally:
             conn.close()
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def set_content_flag(flag_name: str, enabled: bool) -> str:
         """Enable or disable a content flag.
 

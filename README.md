@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://img.shields.io/badge/version-0.4.0-blue" alt="Version">
+  <img src="https://img.shields.io/badge/version-0.5.0-blue" alt="Version">
   <img src="https://img.shields.io/badge/python-3.10+-green" alt="Python">
   <img src="https://img.shields.io/badge/license-MIT-orange" alt="License">
   <img src="https://img.shields.io/badge/tools-60+-purple" alt="Tools">
@@ -29,6 +29,7 @@ Your AI assistant gets access to **everything** it needs to understand and opera
 | **📋 Server Logs** | Recent server logs and crash logs for debugging |
 | **👤 Characters & Accounts** | Character inspection (stats, AAs, inventory, guild), account details, IP history, alt/multibox detection |
 | **🗺️ Zone Details** | Zone information with spawn counts, NPC lists, doors/portals, ground spawns, forage/fishing tables, patrol grids |
+| **Development Context** | Structured environment diagnostics, reusable debugging workflows, and quest/entity investigation prompts |
 
 > **No guessing.** Your AI looks up the exact schema, follows the correct relationships, and writes accurate queries on the first try.
 
@@ -82,6 +83,11 @@ The result: correct queries on the first try, accurate quest scripts, and faster
 | **Schema Docs** | `get_schema_doc` `list_schema_tables` | Table docs with column descriptions and ER relationships |
 | **Quest API Docs** | `get_quest_api_doc` | Official quest API docs with signatures and examples |
 | **Server Docs** | `get_server_doc` | Server operation guides and command references |
+| **Development** | `inspect_development_environment` | Structured status for source, quest, server, docs, and database inputs |
+
+The server also publishes `eqemu://development/workflows` and the `debug_quest`
+and `trace_entity` prompts. MCP 2026-07-28 clients receive structured output
+schemas and read/write/destructive behavior annotations for every tool.
 
 ### Write Tools (opt-in)
 
@@ -103,6 +109,37 @@ Enable with `EQEMU_ACCESS_MODE=readwrite`:
 
 ## Quick Start
 
+### Upgrading from 0.4
+
+Version 0.5 uses MCP SDK 2 and the
+[2026-07-28 protocol](https://modelcontextprotocol.io/specification/2026-07-28).
+Docker and `--http` now serve Streamable HTTP at `/mcp`. Update remote client
+URLs from `/sse` to `/mcp`; `--sse` remains available for legacy clients.
+
+For an existing akk-stack Docker installation:
+
+```bash
+cd /opt/akk-stack/eqemu-mcp-server
+git pull --ff-only
+cd /opt/akk-stack
+docker compose -f docker-compose.yml \
+  -f eqemu-mcp-server/docker-compose.akk-stack.yml \
+  build eqemu-mcp
+docker compose -f docker-compose.yml \
+  -f eqemu-mcp-server/docker-compose.akk-stack.yml \
+  up -d --no-deps eqemu-mcp
+```
+
+For an existing manual installation:
+
+```bash
+cd /opt/akk-stack/eqemu-mcp-server
+git pull --ff-only
+source ../eqemu-mcp-venv/bin/activate
+pip install -e .
+sudo systemctl restart eqemu-mcp  # only when installed as a service
+```
+
 ### Prerequisites
 
 - **Python 3.10+**
@@ -121,7 +158,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-The server starts on port 8888. Connect your AI client to `http://YOUR_SERVER_IP:8888/sse`.
+The server starts on port 8888. Connect your MCP client to `http://YOUR_SERVER_IP:8888/mcp`.
 
 #### akk-stack Integration
 
@@ -200,8 +237,8 @@ pip install -e .
 cp .env.example .env
 # Edit .env with your server paths and database credentials
 
-# Start SSE server
-./start.sh --sse 8888
+# Start Streamable HTTP server
+./start.sh --http 8888
 ```
 
 ### Finding Your Database Credentials
@@ -222,12 +259,15 @@ cat /opt/akk-stack/server/eqemu_config.json | python3 -m json.tool
 
 ## Connecting Your AI Client
 
-### Option 1: SSE (Recommended for Remote)
+### Option 1: Streamable HTTP (Recommended for Remote)
 
 Start the server:
 ```bash
-./start.sh --sse 8888
+./start.sh --http 8888
 ```
+
+Legacy clients can still use `./start.sh --sse 8888` with the `/sse`
+endpoint, but new deployments should use Streamable HTTP.
 
 Then configure your AI client:
 
@@ -239,7 +279,7 @@ Edit `~/.codeium/windsurf/mcp_config.json`:
 {
   "mcpServers": {
     "eqemu": {
-      "serverUrl": "http://YOUR_SERVER_IP:8888/sse"
+      "serverUrl": "http://YOUR_SERVER_IP:8888/mcp"
     }
   }
 }
@@ -250,7 +290,7 @@ With token authentication enabled:
 {
   "mcpServers": {
     "eqemu": {
-      "serverUrl": "http://YOUR_SERVER_IP:8888/sse",
+      "serverUrl": "http://YOUR_SERVER_IP:8888/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_TOKEN"
       }
@@ -268,7 +308,7 @@ In Settings → MCP Servers, add:
 {
   "mcpServers": {
     "eqemu": {
-      "url": "http://YOUR_SERVER_IP:8888/sse"
+      "url": "http://YOUR_SERVER_IP:8888/mcp"
     }
   }
 }
@@ -283,8 +323,8 @@ Open Command Palette → "MCP: Open User Configuration" (or edit `.vscode/mcp.js
 {
   "servers": {
     "eqemu": {
-      "type": "sse",
-      "url": "http://YOUR_SERVER_IP:8888/sse"
+      "type": "http",
+      "url": "http://YOUR_SERVER_IP:8888/mcp"
     }
   }
 }
@@ -295,8 +335,8 @@ With token authentication:
 {
   "servers": {
     "eqemu": {
-      "type": "sse",
-      "url": "http://YOUR_SERVER_IP:8888/sse",
+      "type": "http",
+      "url": "http://YOUR_SERVER_IP:8888/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_TOKEN"
       }
@@ -312,7 +352,7 @@ With token authentication:
 Run `codex mcp add` or edit `~/.codex/config.toml`:
 ```toml
 [mcp_servers.eqemu]
-url = "http://YOUR_SERVER_IP:8888/sse"
+url = "http://YOUR_SERVER_IP:8888/mcp"
 enabled = true
 
 [mcp_servers.eqemu.env]
@@ -322,7 +362,7 @@ MCP_TOKEN = "YOUR_TOKEN"
 Or with token via environment variable:
 ```toml
 [mcp_servers.eqemu]
-url = "http://YOUR_SERVER_IP:8888/sse"
+url = "http://YOUR_SERVER_IP:8888/mcp"
 bearer_token_env_var = "MCP_TOKEN"
 enabled = true
 ```
@@ -333,7 +373,8 @@ Then set `export MCP_TOKEN=YOUR_TOKEN` in your shell.
 <details>
 <summary><b>Claude Desktop</b></summary>
 
-Claude Desktop doesn't natively support SSE. Use stdio mode instead (Option 2), or use [mcp-proxy](https://github.com/punkpeye/mcp-proxy) to bridge SSE to stdio.
+For a local installation, use the stdio configuration below. For remote access,
+use the client's Streamable HTTP configuration with the `/mcp` endpoint.
 </details>
 
 ### Option 2: stdio (Local)
@@ -406,7 +447,7 @@ This is the simplest approach — no code changes needed. To find your IP, visit
 
 ### Option 2: Token Authentication
 
-Require a secret token for all SSE connections. Set `EQEMU_MCP_TOKEN` in your `.env`:
+Require a secret token for all network connections. Set `EQEMU_MCP_TOKEN` in your `.env`:
 
 ```bash
 # Generate a random token
@@ -422,7 +463,7 @@ Then restart the server. Clients must include the token in the URL:
 {
   "mcpServers": {
     "eqemu": {
-      "serverUrl": "http://YOUR_SERVER_IP:8888/sse",
+      "serverUrl": "http://YOUR_SERVER_IP:8888/mcp",
       "headers": {
         "Authorization": "Bearer YOUR_TOKEN"
       }
@@ -431,7 +472,21 @@ Then restart the server. Clients must include the token in the URL:
 }
 ```
 
-The token can also be passed as a query parameter (`?token=YOUR_TOKEN`) for clients that don't support custom headers. Without a valid token, the server returns `401 Unauthorized`.
+Prefer the `Authorization: Bearer YOUR_TOKEN` header. The token can also be
+passed as a query parameter (`?token=YOUR_TOKEN`) for clients that cannot set
+headers. Without a valid token, the server returns `401 Unauthorized`.
+
+### DNS Rebinding Protection
+
+For network deployments, set an explicit comma-separated host allowlist. This
+enables the MCP SDK's Host and Origin checks:
+
+```env
+EQEMU_MCP_ALLOWED_HOSTS=mcp.example.com:*,192.0.2.10:*,127.0.0.1:*
+EQEMU_MCP_ALLOWED_ORIGINS=https://mcp.example.com:*
+```
+
+Use the hostnames or IP addresses that clients actually put in the request URL.
 
 ### Option 3: Read-Only Database User (Recommended)
 
@@ -523,7 +578,7 @@ cd /opt/akk-stack
 # Create venv
 python3 -m venv eqemu-mcp-venv
 source eqemu-mcp-venv/bin/activate
-pip install mcp[cli] mysql-connector-python
+pip install -e .
 
 # Install ripgrep (optional but recommended)
 apt-get install -y ripgrep
@@ -540,8 +595,8 @@ cp .env.example .env
 # Test
 python server.py  # Ctrl+C to stop
 
-# Run SSE
-./start.sh --sse 8888
+# Run Streamable HTTP
+eqemu-mcp --http 8888
 
 # Open the firewall port
 sudo ufw allow 8888/tcp
@@ -558,7 +613,7 @@ After=docker.service
 [Service]
 Type=simple
 WorkingDirectory=/opt/akk-stack/eqemu-mcp-server
-ExecStart=/opt/akk-stack/eqemu-mcp-server/start.sh --sse 8888
+ExecStart=/opt/akk-stack/eqemu-mcp-server/start.sh --http 8888
 Restart=always
 User=root
 
@@ -582,8 +637,11 @@ eqemu-mcp-server/
   docker-compose.yml                 # Standalone Docker Compose
   docker-compose.akk-stack.yml       # akk-stack integration overlay
   eqemu_mcp/
+    annotations.py                   # MCP behavior hints for read and write tools
     config.py                        # Centralized configuration from env vars
+    development.py                   # Structured diagnostics, resource, and prompts
     helpers.py                       # Shared utilities (DB connections, ripgrep, file I/O)
+    mcp_server.py                    # Server subclass with safe annotation defaults
     tools_source.py                  # C++ source code search and browsing
     tools_quest_api.py               # Lua/Perl quest API method parsing
     tools_quests.py                  # Quest script browsing + editing (write)
@@ -604,10 +662,12 @@ Each EQEmu server operator runs their own instance:
 1. Clone this repo on the server
 2. Configure `.env` with their paths and DB credentials
 3. Set `EQEMU_ACCESS_MODE=read` (safe default)
-4. Run via stdio or SSE
+4. Run via stdio or Streamable HTTP
 5. Connect their AI client
 
-The server is completely self-contained — no external services, no cloud dependencies, no API keys. All data stays on your machine.
+The server is self-contained and requires no cloud service or API key. Documentation
+tools may clone the public EQEmu documentation repository on first use when
+`EQEMU_DOCS_PATH` is not configured.
 
 ---
 

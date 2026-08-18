@@ -5,12 +5,12 @@ doors, grids/pathing, spell details, NPC factions, task details,
 and pre-built "handy queries" from the EQEmu docs.
 """
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
 from .helpers import db_conn
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
 
     # ---- Character deep-dive ----
 
@@ -118,7 +118,7 @@ def register(mcp: FastMCP) -> None:
             lines = [
                 f"Account: {acct['name']} (ID: {acct_id})",
                 f"  Status: {acct['status']}",
-                f"  Characters:",
+                "  Characters:",
             ]
 
             cur.execute(

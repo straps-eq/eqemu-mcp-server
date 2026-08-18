@@ -7,20 +7,22 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-# Install Python dependencies
-COPY pyproject.toml .
-RUN pip install --no-cache-dir -e .
-
-# Copy application code
-COPY server.py start.sh ./
+# Copy package metadata and application code before installing the project.
+COPY pyproject.toml README.md LICENSE server.py ./
 COPY eqemu_mcp/ ./eqemu_mcp/
+RUN pip install --no-cache-dir .
+
+COPY start.sh ./
 RUN chmod +x start.sh
 
-# Default to read-only mode and SSE transport
+# Default to read-only mode and Streamable HTTP transport.
 ENV EQEMU_ACCESS_MODE=read
 ENV RG_PATH=/usr/bin/rg
 
 EXPOSE 8888
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/health', timeout=3)" || exit 1
+
 ENTRYPOINT ["python", "server.py"]
-CMD ["--sse", "8888"]
+CMD ["--http", "8888"]

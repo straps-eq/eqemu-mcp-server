@@ -2,11 +2,11 @@
 
 import re
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
-from .config import MAX_RESULTS, MAX_QUERY_ROWS
+from .annotations import DESTRUCTIVE_WRITE
+from .config import MAX_QUERY_ROWS
 from .helpers import db_conn, sanitize_table_name
-
 
 # Well-known EQEmu table relationships
 _KNOWN_RELATIONS = {
@@ -100,7 +100,7 @@ _KNOWN_RELATIONS = {
 }
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
 
     @mcp.tool()
     def list_tables(filter: str = "") -> str:
@@ -228,10 +228,10 @@ def register(mcp: FastMCP) -> None:
         return "\n".join(lines)
 
 
-def register_write(mcp: FastMCP) -> None:
+def register_write(mcp: MCPServer) -> None:
     """Write-mode database tools."""
 
-    @mcp.tool()
+    @mcp.tool(annotations=DESTRUCTIVE_WRITE)
     def run_write_query(sql: str) -> str:
         """Execute a write SQL query (INSERT, UPDATE, DELETE).
 

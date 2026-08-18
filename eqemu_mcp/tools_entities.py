@@ -1,11 +1,11 @@
 """Tools for working with NPCs, items, spawns, zones, loot, merchants, and tasks."""
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
-from .helpers import db_conn, sanitize_table_name
+from .helpers import db_conn
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
     """Read-only entity lookup tools."""
 
     # ---- NPCs ----

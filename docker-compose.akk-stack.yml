@@ -40,6 +40,14 @@ services:
       - EQEMU_DB_NAME=${EQEMU_DB_NAME:-peq}
       - EQEMU_DOCS_PATH=/data/docs
       - EQEMU_MCP_TOKEN=${EQEMU_MCP_TOKEN:-}
+      - EQEMU_MCP_ALLOWED_HOSTS=${EQEMU_MCP_ALLOWED_HOSTS:-}
+      - EQEMU_MCP_ALLOWED_ORIGINS=${EQEMU_MCP_ALLOWED_ORIGINS:-}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/health', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     networks:
       - backend
     # Note: mariadb must already be running (part of akk-stack).

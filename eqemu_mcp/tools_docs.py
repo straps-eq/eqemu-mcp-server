@@ -7,8 +7,9 @@ the tool will attempt to clone it automatically on first use.
 import subprocess
 from pathlib import Path
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
+from .annotations import READ_ONLY_OPEN_WORLD
 from .config import DOCS_PATH, DOCS_REPO_URL, DOCS_SITE_URL, MAX_RESULTS
 from .helpers import rg_bin
 
@@ -53,9 +54,9 @@ def _docs_url(rel_path: str) -> str:
     return f"{DOCS_SITE_URL}/{url_path}"
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY_OPEN_WORLD)
     def search_docs(query: str, section: str = "", max_results: int = 30) -> str:
         """Search the EQEmu documentation (docs.eqemu.io) for a topic.
 
@@ -115,7 +116,7 @@ def register(mcp: FastMCP) -> None:
 
         return f"Found {len(formatted)} result(s):\n\n" + "\n".join(formatted)
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY_OPEN_WORLD)
     def read_doc(path: str) -> str:
         """Read a specific documentation page by path.
 
@@ -149,7 +150,7 @@ def register(mcp: FastMCP) -> None:
         url = _docs_url(path)
         return f"[{url}]\n\n{content}"
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY_OPEN_WORLD)
     def list_doc_sections() -> str:
         """List all top-level documentation sections and their subsections."""
         docs_root = _get_docs_root()
@@ -170,7 +171,7 @@ def register(mcp: FastMCP) -> None:
 
         return "\n".join(lines)
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY_OPEN_WORLD)
     def get_schema_doc(table: str) -> str:
         """Get the full schema documentation for a database table.
 
@@ -206,7 +207,7 @@ def register(mcp: FastMCP) -> None:
         url = _docs_url(rel)
         return f"[{url}]\n\n{content}"
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY_OPEN_WORLD)
     def list_schema_tables(category: str = "") -> str:
         """List all documented database tables, optionally filtered by category.
 
@@ -237,7 +238,7 @@ def register(mcp: FastMCP) -> None:
 
         return "Documented Database Tables:\n" + "\n".join(lines)
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY_OPEN_WORLD)
     def get_quest_api_doc(subject: str, language: str = "") -> str:
         """Get quest API documentation for a specific class or topic.
 
@@ -293,7 +294,7 @@ def register(mcp: FastMCP) -> None:
             f"Available events docs: {', '.join(events)}"
         )
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY_OPEN_WORLD)
     def get_server_doc(topic: str) -> str:
         """Get server operation/configuration documentation.
 

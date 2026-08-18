@@ -3,7 +3,7 @@
 import re
 from pathlib import Path
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
 from .config import SOURCE_PATH
 
@@ -58,7 +58,7 @@ def _parse_perl_methods(filepath: Path) -> list[dict]:
     return list(seen.values())
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: MCPServer) -> None:
 
     @mcp.tool()
     def list_quest_api_classes() -> str:

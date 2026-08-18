@@ -11,10 +11,10 @@ if env_file.exists():
             key, _, val = line.partition("=")
             os.environ.setdefault(key.strip(), val.strip())
 
-from mcp.server.fastmcp import FastMCP
 from eqemu_mcp import tools_docs
+from eqemu_mcp.mcp_server import EQEmuMCPServer
 
-mcp = FastMCP("test")
+mcp = EQEmuMCPServer("test")
 tools_docs.register(mcp)
 
 from eqemu_mcp.tools_docs import _get_docs_root

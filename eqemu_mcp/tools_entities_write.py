@@ -1,15 +1,16 @@
 """Write-mode tools for creating/modifying NPCs, spawns, loot, items, etc."""
 
-from mcp.server.fastmcp import FastMCP
+from mcp.server import MCPServer
 
+from .annotations import ADDITIVE_WRITE, IDEMPOTENT_WRITE, READ_ONLY
 from .helpers import db_conn
 
 
-def register_write(mcp: FastMCP) -> None:
+def register_write(mcp: MCPServer) -> None:
 
     # ---- NPC Management ----
 
-    @mcp.tool()
+    @mcp.tool(annotations=ADDITIVE_WRITE)
     def create_npc(
         name: str,
         level: int,
@@ -51,7 +52,7 @@ def register_write(mcp: FastMCP) -> None:
         finally:
             conn.close()
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def update_npc(npc_id: int, **fields) -> str:
         """Update fields on an existing NPC.
 
@@ -94,7 +95,7 @@ def register_write(mcp: FastMCP) -> None:
 
     # ---- Spawn Management ----
 
-    @mcp.tool()
+    @mcp.tool(annotations=ADDITIVE_WRITE)
     def create_spawn(
         zone: str,
         npc_id: int,
@@ -165,7 +166,7 @@ def register_write(mcp: FastMCP) -> None:
         finally:
             conn.close()
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def delete_spawn(spawn2_id: int) -> str:
         """Delete a spawn2 entry and its orphaned spawngroup/spawnentry if no other spawn2 uses it.
 
@@ -197,7 +198,7 @@ def register_write(mcp: FastMCP) -> None:
 
     # ---- Loot Management ----
 
-    @mcp.tool()
+    @mcp.tool(annotations=ADDITIVE_WRITE)
     def add_loot_to_npc(
         npc_id: int,
         item_id: int,
@@ -274,7 +275,7 @@ def register_write(mcp: FastMCP) -> None:
 
     # ---- Merchant Management ----
 
-    @mcp.tool()
+    @mcp.tool(annotations=ADDITIVE_WRITE)
     def add_merchant_item(merchant_id: int, item_id: int, slot: int = 0) -> str:
         """Add an item to a merchant's inventory.
 
@@ -309,7 +310,7 @@ def register_write(mcp: FastMCP) -> None:
         finally:
             conn.close()
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def remove_merchant_item(merchant_id: int, item_id: int) -> str:
         """Remove an item from a merchant's inventory.
 
@@ -331,7 +332,7 @@ def register_write(mcp: FastMCP) -> None:
 
     # ---- Data Buckets ----
 
-    @mcp.tool()
+    @mcp.tool(annotations=READ_ONLY)
     def get_data_buckets(key_filter: str, limit: int = 50) -> str:
         """Search data buckets by key.
 
@@ -357,7 +358,7 @@ def register_write(mcp: FastMCP) -> None:
         finally:
             conn.close()
 
-    @mcp.tool()
+    @mcp.tool(annotations=IDEMPOTENT_WRITE)
     def set_data_bucket(key: str, value: str, expires: int = 0) -> str:
         """Set a data bucket value.
 
